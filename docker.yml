@@ -1,0 +1,67 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: Install docker dependenses
+    remote_user: ansible 
+    apt:
+      name: 
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - gnupg 
+      - lsb-release
+      state: present
+      update_cache: yes
+    tags:
+      - docker
+  - name: Add Docker official GPG key
+    remote_user: ubuntu
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+    tags:
+      - docker
+  - name: Set up the stable repository
+    remote_user: ansible
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+      state: present
+      update_cache: yes
+    tags:
+      - docker
+  - name: Update apt packages
+    remote_user: ansible
+    apt:
+      update_cache: yes
+    tags:
+      - docker
+  - name: Install docker
+    remote_user: ansible 
+    apt:
+      name: 
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      state: present
+      update_cache: yes
+    tags:
+      - docker
+  - name: Add user ansible to docker group
+    remote_user: ansible
+    user:
+      name: "ansible"
+      groups: "docker"
+      append: yes
+    tags:
+      - docker
+  - name: enable a docker service 
+    remote_user: ansible
+    systemd:
+      name: docker
+      state: started
+      enabled: yes
+      masked: no
+    tags: 
+      - docker
